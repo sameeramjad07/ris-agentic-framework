@@ -1,0 +1,210 @@
+[
+  {
+    "scenario_characteristics": {
+      "system_setup": "MISO",
+      "antenna_configuration": "Single-user, Narrowband",
+      "channel_environment": ["Rician Fading"],
+      "key_characteristics": [
+        "Low/Moderate SNR",
+        "ON/OFF or Full-ON training reflection patterns",
+        "mmWave channel sparsity",
+        "high-mobility scenarios"
+      ]
+    },
+    "recommended_algorithms": [
+      { "name": "Compressed Sensing" },
+      { "name": "Deep Learning" },
+      { "name": "Kalman Filter" }
+    ],
+    "benefits": "Exploits sparsity for reduced pilot overhead, deep learning improves accuracy, Kalman filter effective in high-mobility scenarios",
+    "computational_complexity": "Varies by method; e.g., Compressed Sensing: O(log M), Deep Learning: High due to neural network training"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MISO",
+      "antenna_configuration": "Multi-user, Narrowband",
+      "channel_environment": ["Rician Fading", "Cascaded Channels"],
+      "key_characteristics": [
+        "Common RIS-BS channel",
+        "channel sparsity",
+        "multi-user scenarios"
+      ]
+    },
+    "recommended_algorithms": [
+      { "name": "PPO Algorithm" },
+      { "name": "SDR with Alternating Optimization" },
+      { "name": "Asynchronous One-Step Q-Learning" }
+    ],
+    "benefits": "PPO: Fast convergence, robust to random actions; SDR: Balances performance and complexity; Q-Learning: Stabilizes learning via parallel agents",
+    "computational_complexity": "PPO: Not specified, but fast convergence noted; SDR: Iterative, closed-form solutions; Q-Learning: Varies with neural network size"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MISO",
+      "antenna_configuration": "Single-user, Broadband",
+      "channel_environment": ["mmWave Channels"],
+      "key_characteristics": [
+        "Reduces training complexity using a single neural network"
+      ]
+    },
+    "recommended_algorithms": [
+      { "name": "Single Convolutional Neural Network" }
+    ],
+    "benefits": "Reduces training complexity, efficient for broadband channels",
+    "computational_complexity": "Not specified, but noted as low complexity"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MISO",
+      "antenna_configuration": "Multi-user, Broadband",
+      "channel_environment": ["Common Channel Sparsity"],
+      "key_characteristics": [
+        "Exploits sparsity over subcarriers",
+        "uses orthogonal matching pursuit"
+      ]
+    },
+    "recommended_algorithms": [
+      { "name": "Orthogonal Matching Pursuit (OMP)" },
+      { "name": "Canonical Polyadic Decomposition" }
+    ],
+    "benefits": "OMP: Efficient sparsity exploitation; CPD: Effective for separate channel estimation",
+    "computational_complexity": "OMP: Not specified; CPD: Tensor-based, moderate complexity"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MIMO",
+      "antenna_configuration": "Single-user, Narrowband",
+      "channel_environment": [
+        "Low-rank/Sparse Channels",
+        "High-Mobility Scenarios",
+        "THz channels"
+      ],
+      "key_characteristics": [
+        "Compressed sensing",
+        "matrix factorization",
+        "deep learning for THz channels"
+      ]
+    },
+    "recommended_algorithms": [
+      { "name": "Compressed Sensing" },
+      { "name": "Matrix Factorization" },
+      { "name": "Deep Learning" },
+      { "name": "High-Mobility Estimation" }
+    ],
+    "benefits": "Compressed sensing and matrix factorization reduce pilot overhead; deep learning effective for THz channels; robust for high mobility",
+    "computational_complexity": "Compressed Sensing: O(log M); Matrix Factorization: Varies; Deep Learning: High due to neural network training"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MIMO",
+      "antenna_configuration": "Multi-user, Narrowband",
+      "channel_environment": ["Cascaded Channels", "Rayleigh Fading"],
+      "key_characteristics": [
+        "User-to-user channel estimation",
+        "common RIS-BS channel",
+        "deep learning",
+        "sparse Bayesian learning"
+      ]
+    },
+    "recommended_algorithms": [
+      { "name": "Two-Stage Cascaded Channel Estimation" },
+      { "name": "Convolutional Neural Network" },
+      { "name": "Sparse Bayesian Learning" }
+    ],
+    "benefits": "Two-stage: Reduces pilot overhead; CNN: High accuracy; SBL: Effective for separate channels",
+    "computational_complexity": "Two-Stage: O(L + KJ log M/L); CNN: High due to neural network; SBL: Moderate"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MIMO",
+      "antenna_configuration": "Single-user, Broadband",
+      "channel_environment": ["mmWave Channels"],
+      "key_characteristics": [
+        "deep denoising neural network for separate channel estimation"
+      ]
+    },
+    "recommended_algorithms": [{ "name": "Deep Denoising Neural Network" }],
+    "benefits": "High accuracy in mmWave channels, effective for separate channel estimation",
+    "computational_complexity": "High due to neural network training"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MIMO",
+      "antenna_configuration": "Multi-user, Broadband",
+      "channel_environment": ["THz Channels", "High-Mobility Scenarios"],
+      "key_characteristics": [
+        "federated learning",
+        "compressed sensing",
+        "phase shift design with ZF detection"
+      ]
+    },
+    "recommended_algorithms": [
+      { "name": "Federated Learning" },
+      { "name": "Compressed Sensing" },
+      { "name": "Phase Shift Design with ZF Detection" }
+    ],
+    "benefits": "Federated learning: Scalable for multi-user; Compressed Sensing: Exploits dual sparsity; ZF: Simplifies detection",
+    "computational_complexity": "Federated Learning: High due to distributed training; Compressed Sensing: O(log M); ZF: Moderate"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MIMO (Cell-Free)",
+      "antenna_configuration": "Multi-user, Narrowband",
+      "channel_environment": ["Quasi-static Block-Fading", "TDD Systems"],
+      "key_characteristics": [
+        "Multi-BS cooperation",
+        "joint signal processing",
+        "low-cost coverage enhancement"
+      ]
+    },
+    "recommended_algorithms": [{ "name": "3D-MMV with 3D-MLAOMP" }],
+    "benefits": "Efficient for multi-BS and multi-UE joint estimation, reduces pilot overhead",
+    "computational_complexity": "Not specified, but noted as efficient compared to two-timescale methods"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MIMO (Cell)",
+      "antenna_configuration": "Multi-user, Narrowband",
+      "channel_environment": ["Correlated Rayleigh Fading", "Channel Aging"],
+      "key_characteristics": ["user mobility", "spatial correlation", "I-CSI"]
+    },
+    "recommended_algorithms": [
+      { "name": "Alternating Optimization (AO) with S-CSI" }
+    ],
+    "benefits": "Reduces computational complexity and feedback overhead, mitigates channel aging",
+    "computational_complexity": "O(MN² + N + M)"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MIMO",
+      "antenna_configuration": "Multi-user, Broadband",
+      "channel_environment": ["mmWave OTFS Systems", "High-Mobility Scenarios"],
+      "key_characteristics": [
+        "Joint channel estimation and data detection",
+        "pilot sequences",
+        "message passing"
+      ]
+    },
+    "recommended_algorithms": [{ "name": "JCEDD with Message Passing and EM" }],
+    "benefits": "Simultaneous channel and data recovery, robust to user velocity",
+    "computational_complexity": "O(N_iter M²N⁴)"
+  },
+  {
+    "scenario_characteristics": {
+      "system_setup": "MIMO",
+      "antenna_configuration": "Single/Multi-user, Narrowband",
+      "channel_environment": ["Real-world Imperfections (LTI/STI)"],
+      "key_characteristics": [
+        "Handles static and non-static imperfections",
+        "tensor-based methods"
+      ]
+    },
+    "recommended_algorithms": [
+      { "name": "TALS-LTI" },
+      { "name": "TALS-STI" },
+      { "name": "HOSVD-STI" }
+    ],
+    "benefits": "TALS-LTI: Static imperfections; TALS-STI: Flexible training; HOSVD-STI: Low latency, parallel processing",
+    "computational_complexity": "TALS-LTI: O(N²K[M+L+ML]); TALS-STI: O(N²K[PM+PL+ML]); HOSVD-STI: O(NMLP)"
+  }
+]
