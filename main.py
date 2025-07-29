@@ -29,13 +29,19 @@ async def main():
     # Load configuration
     settings = AppSettings()
     
-    # Load algorithms knowledge base
+    # Load algorithms knowledge base with UTF-8 encoding
     try:
-        with open('config/algorithms_kb.json', 'r') as f:
+        with open('config/algorithms_kb.json', 'r', encoding='utf-8') as f:
             algorithms_kb = json.load(f)
         print(f"✅ Loaded {len(algorithms_kb)} algorithm entries from knowledge base")
     except FileNotFoundError:
         print("❌ algorithms_kb.json not found. Please create it from the provided content.")
+        return
+    except json.JSONDecodeError as e:
+        print(f"❌ Error parsing algorithms_kb.json: {e}")
+        return
+    except UnicodeDecodeError as e:
+        print(f"❌ Unicode error reading algorithms_kb.json: {e}")
         return
     
     # Initialize components
@@ -44,10 +50,11 @@ async def main():
     performance_metrics = PerformanceMetrics()
     data_visualizer = DataVisualizer()
     
-    # Initialize LLM interface
-    if settings.CEREBRAS_API_KEY == os.environ.get("CEREBRAS_API_KEY"):
-        print("❌ Please set your CEREBRAS_API_KEY in config/settings.py")
+    if not settings.CEREBRAS_API_KEY:
+        print("❌ Please set your CEREBRAS_API_KEY in your .env file")
         return
+
+    print("✅ CEREBRAS_API_KEY loaded successfully")
     
     llm_interface = LLMInterface(settings.CEREBRAS_API_KEY, settings.LLM_MODEL_NAME)
     
