@@ -4,7 +4,6 @@ Handles asynchronous communication with the Cerebras LLM.
 """
 
 import json
-import os
 from typing import Dict, Any
 from cerebras.cloud.sdk import AsyncCerebras
 
@@ -50,7 +49,7 @@ class LLMInterface:
                 ],
                 model=self.model_name,
                 temperature=0.2,
-                max_tokens=1500
+                max_tokens=1000
             )
             
             # Extract the content from the response

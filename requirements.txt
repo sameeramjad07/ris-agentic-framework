@@ -1,6 +1,5 @@
 numpy
 matplotlib
-seaborn
 cerebras_cloud_sdk
 asyncio
 python-dotenv
