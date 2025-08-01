@@ -1,0 +1,52 @@
+[
+  {
+    "scenario_type": "Low SNR with Strong Direct Channel",
+    "conditions": {
+      "estimated_snr": "< -5 dB",
+      "direct_channel_norm": "> 0.5",
+      "phase_alignment_score": "< 0.3"
+    },
+    "recommended_algorithm": "Alternating Optimization",
+    "reasoning": "AO handles low SNR well and can effectively utilize strong direct channel through iterative refinement"
+  },
+  {
+    "scenario_type": "High SNR with Weak Direct Channel",
+    "conditions": {
+      "estimated_snr": "> 5 dB",
+      "direct_channel_norm": "< 0.2",
+      "G_norm": "> 0.8"
+    },
+    "recommended_algorithm": "Manifold Optimization",
+    "reasoning": "Manifold optimization excels in high SNR scenarios with strong RIS-mediated paths"
+  },
+  {
+    "scenario_type": "Medium SNR with Good Phase Alignment",
+    "conditions": {
+      "estimated_snr": "-5 to 5 dB",
+      "phase_alignment_score": "> 0.6",
+      "hr_norm": "> 0.5"
+    },
+    "recommended_algorithm": "Gradient Descent",
+    "reasoning": "GD with Adam performs well in balanced scenarios with good initial phase alignment"
+  },
+  {
+    "scenario_type": "Poor Channel Conditions",
+    "conditions": {
+      "G_norm": "< 0.3",
+      "hr_norm": "< 0.3",
+      "phase_alignment_score": "< 0.2"
+    },
+    "recommended_algorithm": "Alternating Optimization",
+    "reasoning": "AO is most robust for challenging channel conditions with poor alignment"
+  },
+  {
+    "scenario_type": "Strong RIS Control",
+    "conditions": {
+      "G_norm": "> 0.8",
+      "hr_norm": "> 0.8",
+      "direct_channel_norm": "< 0.5"
+    },
+    "recommended_algorithm": "Manifold Optimization",
+    "reasoning": "Manifold optimization leverages strong RIS control for optimal performance"
+  }
+]
