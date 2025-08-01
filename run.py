@@ -16,6 +16,16 @@ from agents.solver_agent import SolverAgent
 from utils.llm_interface import LLMInterface
 from utils.performance_metrics import PerformanceMetrics
 
+import os
+import uuid
+from datetime import datetime
+
+# Create a unique folder for plots on each run
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+unique_folder = f"plots/run_{timestamp}_{uuid.uuid4().hex[:6]}"
+os.makedirs(unique_folder, exist_ok=True)  # Create plots/run_<timestamp>_<uuid>/
+plots_dir = unique_folder
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,11 +34,57 @@ def load_dataset(filename: str) -> List[Dict[str, Any]]:
     """Load dataset from file."""
     if not filename.startswith('data/'):
         filename = f'data/{filename}'
+    
+    required_input_keys = [
+        'direct_channel_real', 'direct_channel_imag',
+        'bs_ris_channel_real', 'bs_ris_channel_imag',
+        'ris_user_channel_real', 'ris_user_channel_imag',
+        'num_ris_elements', 'direct_channel_norm', 'G_norm',
+        'hr_norm', 'phase_alignment_score', 'estimated_snr', 'objective'
+    ]
+    required_output_keys = ['optimized_phase_shifts']
+    
     dataset = []
     with open(filename, 'r') as f:
-        for line in f:
-            scenario = json.loads(line.strip())
-            dataset.append(scenario)
+        for i, line in enumerate(f, 1):
+            try:
+                scenario = json.loads(line.strip())
+                # Validate structure
+                if 'input' not in scenario or 'output' not in scenario:
+                    logger.warning(f"Skipping invalid scenario at line {i}: Missing input/output")
+                    continue
+                
+                # Validate input keys
+                missing_inputs = [k for k in required_input_keys if k not in scenario['input']]
+                if missing_inputs:
+                    logger.warning(f"Skipping scenario at line {i}: Missing input keys {missing_inputs}")
+                    continue
+                
+                # Validate output keys
+                missing_outputs = [k for k in required_output_keys if k not in scenario['output']]
+                if missing_outputs:
+                    logger.warning(f"Skipping scenario at line {i}: Missing output keys {missing_outputs}")
+                    continue
+                
+                # Validate array lengths
+                num_elements = scenario['input']['num_ris_elements']
+                for key in ['bs_ris_channel_real', 'bs_ris_channel_imag', 
+                           'ris_user_channel_real', 'ris_user_channel_imag']:
+                    if len(scenario['input'][key]) != num_elements:
+                        logger.warning(f"Skipping scenario at line {i}: Invalid length for {key}")
+                        continue
+                if len(scenario['output']['optimized_phase_shifts']) != num_elements:
+                    logger.warning(f"Skipping scenario at line {i}: Invalid length for optimized_phase_shifts")
+                    continue
+                
+                dataset.append(scenario)
+            except json.JSONDecodeError:
+                logger.warning(f"Skipping invalid JSON at line {i}")
+                continue
+    
+    if not dataset:
+        raise ValueError(f"No valid scenarios found in {filename}")
+    
     return dataset
 
 def load_knowledge_base() -> List[Dict[str, Any]]:
@@ -47,33 +103,44 @@ async def evaluate_scenario(coordinator: CoordinatorAgent, scenario: Dict[str, A
         'alternating_optimization': [],
         'agentic': []
     }
-    
-    for power in transmit_powers:
-        try:
-            # Process scenario through agentic pipeline
-            scenario_results = await coordinator.process_scenario(scenario)
-            
-            # Calculate SNR for each method at current transmit power
+
+    # Get objective from scenario input, default to 'snr'
+    objective = scenario['input'].get('objective', 'maximize_snr').lower()
+    if objective not in ['maximize_snr', 'maximize_sum_rate']:
+        logger.warning(f"Unsupported objective '{objective}'; defaulting to SNR")
+        objective = 'maximize_snr'
+
+    try:
+        # Process scenario once to get phase shifts
+        scenario_results = await coordinator.process_scenario(scenario)
+        
+        # Calculate performance metric for each method across transmit powers
+        for power in transmit_powers:
             for method in results.keys():
                 if method in scenario_results:
                     phase_shifts = scenario_results[method]['phase_shifts']
-                    snr = PerformanceMetrics.calculate_snr(
-                        phase_shifts, scenario['input'], transmit_power=power
-                    )
-                    results[method].append(snr)
+                    if objective == 'maximize_snr':
+                        metric = PerformanceMetrics.calculate_snr(
+                            phase_shifts, scenario['input'], transmit_power=power
+                        )
+                    elif objective == 'maximize_sum_rate':
+                        metric = PerformanceMetrics.calculate_sum_rate(
+                            phase_shifts, scenario['input'], transmit_power=power
+                        )
+                    results[method].append(metric)
                 else:
-                    results[method].append(-50.0)  # Very poor performance
+                    results[method].append(-50.0 if objective == 'maximize_snr' else 0.0)
                     
-        except Exception as e:
-            logger.error(f"Error evaluating scenario: {e}")
-            # Fill with poor performance values
+    except Exception as e:
+        logger.error(f"Error evaluating scenario: {e}")
+        for power in transmit_powers:
             for method in results.keys():
-                results[method].append(-50.0)
+                results[method].append(-50.0 if objective == 'maximize_snr' else 0.0)
     
-    return results
+    return results, objective
 
 def plot_individual_scenario(scenario_idx: int, results: Dict[str, List[float]], 
-                           transmit_powers: List[float], num_elements: int):
+                           transmit_powers: List[float], num_elements: int, objective: str):
     """Plot results for an individual scenario."""
     plt.figure(figsize=(12, 8))
     
@@ -122,17 +189,17 @@ def plot_individual_scenario(scenario_idx: int, results: Dict[str, List[float]],
     
     plt.xlabel('Transmit Power (dBm)')
     plt.ylabel('SNR (dB)')
-    plt.title(f'RIS Performance - Scenario {scenario_idx + 1} ({num_elements} elements)')
+    plt.title(f'RIS Performance - Scenario {scenario_idx + 1} ({num_elements} elements, Objective: {objective.title()})')
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     
     # Save plot
-    plt.savefig(f'scenario_{scenario_idx + 1}_{num_elements}elements.png', dpi=300)
+    plt.savefig(os.path.join(plots_dir, f'scenario_{scenario_idx + 1}_{num_elements}elements.png'), dpi=300)
     plt.close()
 
 def plot_cumulative_results(all_results: List[Dict[str, List[float]]], 
-                          transmit_powers: List[float], num_elements: int):
+                          transmit_powers: List[float], num_elements: int, objective: str):
     """Plot cumulative/average results across all scenarios."""
     plt.figure(figsize=(12, 8))
     
@@ -187,13 +254,13 @@ def plot_cumulative_results(all_results: List[Dict[str, List[float]]],
     
     plt.xlabel('Transmit Power (dBm)')
     plt.ylabel('Average SNR (dB)')
-    plt.title(f'RIS Performance - Average Across All Scenarios ({num_elements} elements)')
+    plt.title(f'RIS Performance - Average Across All Scenarios ({num_elements} elements, Objective: {objective.title()})')
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     
     # Save plot
-    plt.savefig(f'cumulative_results_{num_elements}elements.png', dpi=300)
+    plt.savefig(os.path.join(plots_dir, f'cumulative_results_{num_elements}elements.png'), dpi=300)
     plt.close()
     
     return avg_results
@@ -236,7 +303,7 @@ def plot_multi_element_comparison(all_element_results: Dict[int, Dict[str, List[
     plt.tight_layout()
     
     # Save plot
-    plt.savefig('multi_element_comparison.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(plots_dir, 'multi_element_comparison.png'), dpi=300, bbox_inches='tight')
     plt.close()
 
 async def main():
@@ -264,7 +331,7 @@ async def main():
     knowledge_base = load_knowledge_base()
     
     # Initialize agents
-    llm_interface = LLMInterface(settings.CEREBRAS_API_KEY, settings.LLM_MODEL_NAME)
+    llm_interface = LLMInterface()
     optimizer_agent = OptimizerAgent(llm_interface, knowledge_base)
     solver_agent = SolverAgent()
     coordinator = CoordinatorAgent(optimizer_agent, solver_agent)
@@ -290,18 +357,20 @@ async def main():
         print(f"   - Scenarios to evaluate: {max_scenarios}")
         
         all_results = []
+        scenario_objective = 'maximize_snr'  # Default
         
         # Evaluate scenarios
         for i, scenario in enumerate(dataset[:max_scenarios]):
             print(f"   - Processing scenario {i + 1}/{max_scenarios}...")
             
             try:
-                results = await evaluate_scenario(coordinator, scenario, transmit_powers) 
+                results, objective = await evaluate_scenario(coordinator, scenario, transmit_powers) 
+                scenario_objective = objective
                 all_results.append(results)
                 
                 # Plot individual scenario if requested
                 if args.individual_plots:
-                    plot_individual_scenario(i, results, transmit_powers, num_elements)
+                    plot_individual_scenario(i, results, transmit_powers, num_elements, objective)
                     
             except Exception as e:
                 logger.error(f"Failed to process scenario {i + 1}: {e}")
@@ -309,7 +378,7 @@ async def main():
         
         # Plot cumulative results for this dataset
         if all_results:
-            avg_results = plot_cumulative_results(all_results, transmit_powers, num_elements)
+            avg_results = plot_cumulative_results(all_results, transmit_powers, num_elements, scenario_objective)
             all_element_results[num_elements] = avg_results
             print(f"   ✅ Completed evaluation for {num_elements} elements")
         else:

@@ -6,13 +6,16 @@ Handles asynchronous communication with the Cerebras LLM.
 import json
 from typing import Dict, Any
 from cerebras.cloud.sdk import AsyncCerebras
+from config.settings import Settings
 
 class LLMInterface:
     """
     Interface for communicating with Cerebras LLM API.
     """
-    
-    def __init__(self, api_key: str, model_name: str):
+
+    settings = Settings()
+
+    def __init__(self):
         """
         Initialize the LLM interface.
         
@@ -20,11 +23,11 @@ class LLMInterface:
             api_key: Cerebras API key
             model_name: Name of the Cerebras model
         """
-        self.api_key = api_key
-        self.model_name = model_name
-        self.client = AsyncCerebras(api_key=api_key)
+        self.api_key = self.settings.CEREBRAS_API_KEY
+        self.model_name = self.settings.LLM_MODEL_NAME
+        self.client = AsyncCerebras(api_key=self.api_key)
         
-    async def query_llm(self, prompt: str, response_schema: Dict[str, Any]) -> Dict[str, Any]:
+    async def query_llm(self, prompt: str, response_schema: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Query the Cerebras LLM with a prompt.
         
@@ -58,6 +61,11 @@ class LLMInterface:
             # Parse the JSON content
             try:
                 parsed_content = json.loads(content)
+                # Optional: Validate against response_schema if provided
+                if response_schema:
+                    for key in response_schema:
+                        if key not in parsed_content:
+                            raise ValueError(f"Missing expected key {key} in LLM response")
                 return parsed_content
             except json.JSONDecodeError as e:
                 print(f"Error parsing LLM JSON response: {e}")
@@ -68,6 +76,10 @@ class LLMInterface:
                 if json_match:
                     try:
                         parsed_content = json.loads(json_match.group())
+                        if response_schema:
+                            for key in response_schema:
+                                if key not in parsed_content:
+                                    raise ValueError(f"Missing expected key {key} in LLM response")
                         return parsed_content
                     except:
                         pass

@@ -1,6 +1,7 @@
 """Central coordinator for the RIS optimization process."""
 
 import logging
+import numpy as np
 from typing import Dict, List, Any
 from agents.optimizer_agent import OptimizerAgent
 from agents.solver_agent import SolverAgent
@@ -16,6 +17,9 @@ class CoordinatorAgent:
         try:
             # Extract input features
             scenario_features = self._extract_features(scenario['input'])
+
+            # Log the scenario for debugging
+            self.logger.info(f"LLM query initiated for scenario with features: {scenario_features}")
             
             # Get algorithm recommendation from optimizer agent
             algorithm_name, reasoning = await self.optimizer_agent.select_algorithm(scenario_features)
@@ -64,7 +68,7 @@ class CoordinatorAgent:
             self.logger.error(f"Error processing scenario: {e}")
             raise
     
-    def _extract_features(self, input_data: Dict[str, Any]) -> Dict[str, float]:
+    # def _extract_features(self, input_data: Dict[str, Any]) -> Dict[str, float]:
         """Extract derived features from input data."""
         import numpy as np
         
@@ -94,6 +98,56 @@ class CoordinatorAgent:
             'estimated_snr': self._estimate_snr(h_d, H_br, h_ru),
             'num_ris_elements': input_data['num_ris_elements']
         }
+        
+        return features
+
+    def _extract_features(self, input_data: Dict[str, Any]) -> Dict[str, float]:
+        """Extract derived features from input data, preferring precomputed values."""
+        import numpy as np
+        
+        # Initialize features dictionary
+        features = {
+            'direct_channel_norm': None,
+            'G_norm': None,
+            'hr_norm': None,
+            'phase_alignment_score': None,
+            'estimated_snr': None,
+            'num_ris_elements': input_data['num_ris_elements']
+        }
+        
+        # Check if precomputed features exist
+        precomputed_keys = ['direct_channel_norm', 'G_norm', 'hr_norm', 
+                            'phase_alignment_score', 'estimated_snr']
+        if all(key in input_data for key in precomputed_keys):
+            for key in precomputed_keys:
+                features[key] = float(input_data[key])
+        else:
+            # Fallback: Compute features if not precomputed
+            self.logger.warning("Precomputed features missing; computing on-the-fly")
+            
+            # Convert channel data to complex arrays
+            h_d = complex(input_data['direct_channel_real'], input_data['direct_channel_imag'])
+            
+            H_br = np.array([
+                complex(r, i) for r, i in zip(
+                    input_data['bs_ris_channel_real'], 
+                    input_data['bs_ris_channel_imag']
+                )
+            ])
+            
+            h_ru = np.array([
+                complex(r, i) for r, i in zip(
+                    input_data['ris_user_channel_real'], 
+                    input_data['ris_user_channel_imag']
+                )
+            ])
+            
+            # Calculate derived features
+            features['direct_channel_norm'] = abs(h_d)
+            features['G_norm'] = np.linalg.norm(H_br)
+            features['hr_norm'] = np.linalg.norm(h_ru)
+            features['phase_alignment_score'] = self._calculate_phase_alignment(H_br, h_ru)
+            features['estimated_snr'] = self._estimate_snr(h_d, H_br, h_ru)
         
         return features
     

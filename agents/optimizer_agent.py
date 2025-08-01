@@ -35,8 +35,13 @@ Respond with valid JSON only:
     "reasoning": "detailed explanation of why this algorithm was chosen"
 }}
 """
+            # Define expected response schema
+            response_schema = {
+                "selected_algorithm": str,
+                "reasoning": str
+            }
             
-            response = await self.llm_interface.query_llm(prompt)
+            response = await self.llm_interface.query_llm(prompt, response_schema)
             
             algorithm = response.get('selected_algorithm', 'Alternating Optimization')
             reasoning = response.get('reasoning', 'Fallback selection')

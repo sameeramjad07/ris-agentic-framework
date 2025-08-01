@@ -100,3 +100,6 @@ dmypy.json
 
 # Generated Plots
 plots/
+
+# Generated Dataset
+data/

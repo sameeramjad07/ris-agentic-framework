@@ -5,6 +5,7 @@ import numpy as np
 import argparse
 from typing import List, Dict, Any
 from utils.performance_metrics import PerformanceMetrics
+from config.settings import Settings
 
 def generate_channel_scenario(num_elements: int) -> Dict[str, Any]:
     """Generate a random RIS scenario."""
@@ -75,10 +76,12 @@ def save_dataset(dataset: List[Dict[str, Any]], num_elements: int, num_scenarios
     print(f"Dataset saved to {filename}")
 
 def main():
+    settings = Settings()
+
     parser = argparse.ArgumentParser(description='Generate RIS scenario datasets')
-    parser.add_argument('--elements', type=int, nargs='+', default=[8, 16, 32, 64],
+    parser.add_argument('--elements', type=int, nargs='+', default=settings.DEFAULT_NUM_ELEMENTS,
                        help='Number of RIS elements for each dataset')
-    parser.add_argument('--scenarios', type=int, default=100,
+    parser.add_argument('--scenarios', type=int, default=settings.DEFAULT_NUM_SCENARIOS,
                        help='Number of scenarios per dataset')
     
     args = parser.parse_args()
