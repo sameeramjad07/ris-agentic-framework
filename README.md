@@ -121,16 +121,47 @@ The generated datasets adhere to the following structure:
 ```json
 {
   "input": {
-    "direct_channel_real": -0.0,
-    "direct_channel_imag": 0.0003,
-    "bs_ris_channel_real": [-0.0191, -0.0096, -0.0065, 0.0288],
-    "bs_ris_channel_imag": [0.015, 0.0139, 0.0151, 0.0002],
-    "ris_user_channel_real": [-0.0241, 0.0277, 0.0312, 0.0346],
-    "ris_user_channel_imag": [0.0324, 0.0194, -0.0012, 0.0125],
-    "num_ris_elements": 4
+    "direct_channel_real": -0.22393781829312337,
+    "direct_channel_imag": -0.06612014578604872,
+    "bs_ris_channel_real": [
+      -0.5301220053335639,
+      -0.6717094857405432,
+      0.4304920269091739,
+      -0.014772344750441115
+    ],
+    "bs_ris_channel_imag": [
+      0.3061284178182244,
+      0.00237188368947527,
+      0.168838010664752,
+      0.05301202154917025
+    ],
+    "ris_user_channel_real": [
+      1.0672259276063036,
+      0.20616010829544665,
+      -0.2471617700831295,
+      0.43107828122943176
+    ],
+    "ris_user_channel_imag": [
+      -0.374505320961562,
+      0.2796301517310384,
+      0.7362623410241502,
+      -0.19044595685504853
+    ],
+    "num_ris_elements": 8,
+    "direct_channel_norm": 0.2334952250917613,
+    "G_norm": 3.0119169370943384,
+    "hr_norm": 2.0402818004263676,
+    "phase_alignment_score": 0.12012874929268588,
+    "estimated_snr": 127.35289338335437,
+    "objective": "maximize_snr"
   },
   "output": {
-    "optimized_phase_shifts": [1.5708, 0.0, 5.7596, 2.0944]
+    "optimized_phase_shifts": [
+      1.148280079561177,
+      5.638321174317982,
+      0.3004840839470013,
+      2.0021393082938577
+    ]
   }
 }
 ```
