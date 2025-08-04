@@ -2,7 +2,7 @@
   {
     "scenario_type": "Low SNR with Strong Direct Channel",
     "conditions": {
-      "estimated_snr": "< -5 dB",
+      "estimated_snr": "< 20 dB",
       "direct_channel_norm": "> 0.5",
       "phase_alignment_score": "< 0.3"
     },
@@ -12,9 +12,9 @@
   {
     "scenario_type": "High SNR with Weak Direct Channel",
     "conditions": {
-      "estimated_snr": "> 5 dB",
+      "estimated_snr": "> 100 dB",
       "direct_channel_norm": "< 0.2",
-      "G_norm": "> 0.8"
+      "G_norm": "> 1.0"
     },
     "recommended_algorithm": "Manifold Optimization",
     "reasoning": "Manifold optimization excels in high SNR scenarios with strong RIS-mediated paths"
@@ -22,7 +22,7 @@
   {
     "scenario_type": "Medium SNR with Good Phase Alignment",
     "conditions": {
-      "estimated_snr": "-5 to 5 dB",
+      "estimated_snr": "20 to 100 dB",
       "phase_alignment_score": "> 0.6",
       "hr_norm": "> 0.5"
     },
@@ -42,8 +42,8 @@
   {
     "scenario_type": "Strong RIS Control",
     "conditions": {
-      "G_norm": "> 0.8",
-      "hr_norm": "> 0.8",
+      "G_norm": "> 1.0",
+      "hr_norm": "> 1.0",
       "direct_channel_norm": "< 0.5"
     },
     "recommended_algorithm": "Manifold Optimization",

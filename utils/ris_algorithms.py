@@ -92,9 +92,9 @@ class RISAlgorithms:
     
     def alternating_optimization(self, h_d, H, h_1, N, transmit_power, 
                                max_iterations=1000, tolerance=1e-6, discrete_phases=None):
-        """Alternating optimization algorithm."""
+        """Alternating optimization algorithm for single-user MISO RIS system."""
         h_r = self.compute_cascaded_channel(H, h_1)
-        theta = np.random.choice([np.pi, -np.pi], N)
+        theta = np.random.uniform(0, 2 * np.pi, N)  # Initialize with uniform random phases
         e = np.exp(1j * theta)
         powers = [max(self.compute_received_power(h_d, h_r, e, transmit_power), 1e-20)]
         snrs = [self.compute_snr(powers[0], noise_power=1e-12)]
@@ -102,8 +102,13 @@ class RISAlgorithms:
 
         for iteration in range(max_iterations):
             for n in range(N):
+                # Compute combined channel excluding the nth element
                 combined_without_n = h_d + np.dot(h_r, e) - h_r[n] * e[n]
-                optimal_phase = -np.angle(h_r[n] * combined_without_n.conj())
+                # Ensure numerical stability
+                if abs(combined_without_n) < 1e-10:
+                    optimal_phase = np.random.uniform(0, 2 * np.pi)  # Fallback to random phase
+                else:
+                    optimal_phase = -np.angle(h_r[n] * combined_without_n.conj())
                 if discrete_phases is not None:
                     optimal_phase = min(discrete_phases, key=lambda x: abs(x - optimal_phase))
                 e[n] = np.exp(1j * optimal_phase)
@@ -113,7 +118,12 @@ class RISAlgorithms:
             snrs.append(self.compute_snr(power, noise_power=1e-12))
             iterations.append(iteration + 1)
 
+            # Log for debugging
+            print(f"Iteration {iteration + 1}: Power = {power:.2e}, SNR = {snrs[-1]:.2f} dB")
+
+            # Check convergence
             if iteration > 0 and abs(powers[-1] - powers[-2]) < tolerance * powers[-2]:
+                print(f"Converged after {iteration + 1} iterations")
                 break
 
         theta = np.angle(e)
